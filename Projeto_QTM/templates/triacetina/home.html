@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Triacetina - QTM</title>
+  <link rel="stylesheet" href="/static/spectre.min.css">
+  <style>
+    body { background: #f8f9fa; }
+    .navbar { background: #0a4d8c; color: #fff; padding: .8rem 0; margin-bottom: 1.5rem; }
+    .navbar .brand { font-size: 1.2rem; font-weight: 600; }
+    .navbar .sub { font-size: .8rem; opacity: .85; }
+    .wrap { max-width: 820px; margin: 0 auto; padding: 0 1rem 2rem; }
+    .card { background: #fff; margin-bottom: 1rem; }
+    .card .card-header { color: #0a4d8c; font-weight: 600; }
+    .status { display: inline-flex; align-items: center; gap: .4rem; font-size: .85rem; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .dot-on { background: #0f7b43; }
+    .dot-off { background: #b42318; }
+    .rodape { text-align: center; color: #8a94a0; font-size: .78rem; padding: 1.5rem 0; }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="wrap">
+      <div class="brand">Triacetina - QTM</div>
+      <div class="sub">Leitura por estacao - ambiente QA</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- STATUS DO BANCO (mostrado ao abrir) -->
+    <div class="card">
+      <div class="card-body">
+        {% if banco_online %}
+        <span class="status"><span class="dot dot-on"></span> Banco conectado</span>
+        {% else %}
+        <span class="status"><span class="dot dot-off"></span> Sem conexao com o banco</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- BUSCA POR ESTACAO -->
+    <div class="card">
+      <div class="card-header"><div class="card-title h6">Buscar leitura</div></div>
+      <div class="card-body">
+        {% if erro %}
+        <div class="toast toast-error">{{ erro }}</div>
+        {% endif %}
+        <form method="get" action="/triacetina/buscar" class="form-horizontal">
+          <div class="input-group">
+            <input class="form-input" type="text" name="estacao" maxlength="100"
+                   placeholder="Informe a estacao (ex.: EST-01)"
+                   value="{{ estacao or '' }}" required>
+            <button class="btn btn-primary input-group-btn" type="submit">Buscar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- RESULTADO: so aparece depois de buscar uma estacao -->
+    {% if estacao %}
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title h6">Estacao {{ estacao }} - ultima leitura</div>
+      </div>
+      <div class="card-body">
+        {% if leitura %}
+        <table class="table">
+          <tbody>
+            <tr><th>Teor</th><td>{{ leitura.teor }} {{ leitura.unidade }}</td></tr>
+            <tr><th>Lote</th><td>{{ leitura.lote }}</td></tr>
+            <tr><th>Quando</th><td>{{ leitura.quando }}</td></tr>
+          </tbody>
+        </table>
+        {% else %}
+        <div class="toast toast-warning">Nenhuma leitura encontrada para esta estacao.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- INSERCAO: so aparece depois de buscar, ja amarrada a estacao -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title h6">Inserir leitura para {{ estacao }}</div>
+      </div>
+      <div class="card-body">
+        {% if ok %}
+        <div class="toast toast-success">Leitura registrada.</div>
+        {% endif %}
+        <form method="post" action="/triacetina">
+          <!-- a estacao buscada acompanha o formulario (amarra o insert a ela) -->
+          <input type="hidden" name="estacao" value="{{ estacao }}">
+          <div class="form-group">
+            <label class="form-label" for="teor">Teor</label>
+            <input class="form-input" id="teor" name="teor" maxlength="100" placeholder="99.2" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="unidade">Unidade</label>
+            <input class="form-input" id="unidade" name="unidade" maxlength="100" placeholder="%" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="lote">Lote</label>
+            <input class="form-input" id="lote" name="lote" maxlength="100" placeholder="L-2241" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Registrar</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="rodape">POC - servidor {{ request.url.hostname }} - ambiente QA</div>
+  </div>
+</body>
+</html>

@@ -4,16 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Triacetina - QTM</title>
-  <link rel="stylesheet" href="/static/spectre.min.css">
+  <!-- Bootstrap 4.6 (instalado via apt: libjs-bootstrap4, copiado para static/) -->
+  <link rel="stylesheet" href="/static/bootstrap.min.css">
   <style>
     body { background: #f8f9fa; }
-    .navbar { background: #0a4d8c; color: #fff; padding: .8rem 0; margin-bottom: 1.5rem; }
-    .navbar .brand { font-size: 1.2rem; font-weight: 600; }
-    .navbar .sub { font-size: .8rem; opacity: .85; }
+    .navbar-qtm { background: #0a4d8c; color: #fff; }
+    .navbar-qtm .brand { font-size: 1.2rem; font-weight: 600; }
+    .navbar-qtm .sub { font-size: .8rem; opacity: .85; }
     .wrap { max-width: 820px; margin: 0 auto; padding: 0 1rem 2rem; }
-    .card { background: #fff; margin-bottom: 1rem; }
-    .card .card-header { color: #0a4d8c; font-weight: 600; }
-    .status { display: inline-flex; align-items: center; gap: .4rem; font-size: .85rem; }
+    .card { margin-bottom: 1rem; }
+    .card-header-qtm { color: #0a4d8c; font-weight: 600; }
+    .status { display: inline-flex; align-items: center; gap: .4rem; font-size: .9rem; }
     .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
     .dot-on { background: #0f7b43; }
     .dot-off { background: #b42318; }
@@ -21,12 +22,13 @@
   </style>
 </head>
 <body>
-  <div class="navbar">
+  <!-- NAVBAR -->
+  <nav class="navbar-qtm py-2 mb-4">
     <div class="wrap">
       <div class="brand">Triacetina - QTM</div>
       <div class="sub">Leitura por estacao - ambiente QA</div>
     </div>
-  </div>
+  </nav>
 
   <div class="wrap">
 
@@ -43,17 +45,19 @@
 
     <!-- BUSCA POR ESTACAO -->
     <div class="card">
-      <div class="card-header"><div class="card-title h6">Buscar leitura</div></div>
+      <div class="card-header card-header-qtm">Buscar leitura</div>
       <div class="card-body">
         {% if erro %}
-        <div class="toast toast-error">{{ erro }}</div>
+        <div class="alert alert-danger">{{ erro }}</div>
         {% endif %}
-        <form method="get" action="/triacetina/buscar" class="form-horizontal">
+        <form method="get" action="/triacetina/buscar">
           <div class="input-group">
-            <input class="form-input" type="text" name="estacao" maxlength="100"
+            <input class="form-control" type="text" name="estacao" maxlength="100"
                    placeholder="Informe a estacao (ex.: EST-01)"
                    value="{{ estacao or '' }}" required>
-            <button class="btn btn-primary input-group-btn" type="submit">Buscar</button>
+            <div class="input-group-append">
+              <button class="btn btn-primary" type="submit">Buscar</button>
+            </div>
           </div>
         </form>
       </div>
@@ -62,47 +66,43 @@
     <!-- RESULTADO: so aparece depois de buscar uma estacao -->
     {% if estacao %}
     <div class="card">
-      <div class="card-header">
-        <div class="card-title h6">Estacao {{ estacao }} - ultima leitura</div>
-      </div>
+      <div class="card-header card-header-qtm">Estacao {{ estacao }} - ultima leitura</div>
       <div class="card-body">
         {% if leitura %}
-        <table class="table">
+        <table class="table table-sm mb-0">
           <tbody>
-            <tr><th>Teor</th><td>{{ leitura.teor }} {{ leitura.unidade }}</td></tr>
-            <tr><th>Lote</th><td>{{ leitura.lote }}</td></tr>
-            <tr><th>Quando</th><td>{{ leitura.quando }}</td></tr>
+            <tr><th scope="row">Teor</th><td>{{ leitura.teor }} {{ leitura.unidade }}</td></tr>
+            <tr><th scope="row">Lote</th><td>{{ leitura.lote }}</td></tr>
+            <tr><th scope="row">Quando</th><td>{{ leitura.quando }}</td></tr>
           </tbody>
         </table>
         {% else %}
-        <div class="toast toast-warning">Nenhuma leitura encontrada para esta estacao.</div>
+        <div class="alert alert-warning mb-0">Nenhuma leitura encontrada para esta estacao.</div>
         {% endif %}
       </div>
     </div>
 
     <!-- INSERCAO: so aparece depois de buscar, ja amarrada a estacao -->
     <div class="card">
-      <div class="card-header">
-        <div class="card-title h6">Inserir leitura para {{ estacao }}</div>
-      </div>
+      <div class="card-header card-header-qtm">Inserir leitura para {{ estacao }}</div>
       <div class="card-body">
         {% if ok %}
-        <div class="toast toast-success">Leitura registrada.</div>
+        <div class="alert alert-success">Leitura registrada.</div>
         {% endif %}
         <form method="post" action="/triacetina">
           <!-- a estacao buscada acompanha o formulario (amarra o insert a ela) -->
           <input type="hidden" name="estacao" value="{{ estacao }}">
           <div class="form-group">
-            <label class="form-label" for="teor">Teor</label>
-            <input class="form-input" id="teor" name="teor" maxlength="100" placeholder="99.2" required>
+            <label for="teor">Teor</label>
+            <input class="form-control" id="teor" name="teor" maxlength="100" placeholder="99.2" required>
           </div>
           <div class="form-group">
-            <label class="form-label" for="unidade">Unidade</label>
-            <input class="form-input" id="unidade" name="unidade" maxlength="100" placeholder="%" required>
+            <label for="unidade">Unidade</label>
+            <input class="form-control" id="unidade" name="unidade" maxlength="100" placeholder="%" required>
           </div>
           <div class="form-group">
-            <label class="form-label" for="lote">Lote</label>
-            <input class="form-input" id="lote" name="lote" maxlength="100" placeholder="L-2241" required>
+            <label for="lote">Lote</label>
+            <input class="form-control" id="lote" name="lote" maxlength="100" placeholder="L-2241" required>
           </div>
           <button type="submit" class="btn btn-primary btn-block">Registrar</button>
         </form>
